@@ -17,6 +17,9 @@ export enum Role {
 export enum StreamEventType {
   TEXT_DELTA = 'text_delta',
   THINKING = 'thinking',
+  TOOL_CALL = 'tool_call',
+  TOOL_RESULT = 'tool_result',
+  STREAM_END = 'stream_end',
   ERROR = 'error',
 }
 

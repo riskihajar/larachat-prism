@@ -74,7 +74,10 @@ export interface PartType {
 
 export interface StreamEvent {
   eventType: StreamEventType
-  content: string
+  content?: string
+  toolName?: string
+  arguments?: Record<string, unknown>
+  result?: string
 }
 
 export type MessageParts = Partial<Record<ContentType, string>>

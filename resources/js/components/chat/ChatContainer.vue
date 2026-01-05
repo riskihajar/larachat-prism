@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Message } from '@/types/index'
+import type { ToolCallInfo } from '@/composables/useMessageStream'
 import { ref } from 'vue'
 import Messages from '@/components/chat/Messages.vue'
 import MultimodalInput from '@/components/chat/MultimodalInput.vue'
@@ -11,6 +12,7 @@ withDefaults(
     attachments?: Array<string>
     isReadonly?: boolean
     chatId?: string
+    currentTool?: ToolCallInfo | null
   }>(),
   {
     messages: () => [],
@@ -18,6 +20,7 @@ withDefaults(
     attachments: () => [],
     isReadonly: false,
     chatId: '',
+    currentTool: null,
   },
 )
 
@@ -52,6 +55,7 @@ defineExpose({
         :stream-id="streamId"
         :messages="messages"
         :is-readonly="isReadonly"
+        :current-tool="currentTool"
         @update-is-at-bottom="updateIsAtBottom"
       />
     </div>

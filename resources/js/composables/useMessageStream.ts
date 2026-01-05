@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 import type { Message, StreamEvent } from '@/types'
 import { useStream } from '@laravel/stream-vue'
-import { nextTick } from 'vue'
+import { nextTick, ref } from 'vue'
 import { ContentType, Role, StreamEventType } from '@/types/enum'
 
 interface StreamParams {
@@ -9,11 +9,20 @@ interface StreamParams {
   model: string
 }
 
+interface ToolCallInfo {
+  name: string
+  arguments: Record<string, unknown>
+  status: 'calling' | 'complete'
+  result?: string
+}
+
 export function useMessageStream(
   chatId: string,
   messages: Ref<Message[]>,
   onComplete?: () => void,
 ) {
+  const currentTool = ref<ToolCallInfo | null>(null)
+
   const updateMessageWithEvent = (eventData: StreamEvent): void => {
     let currentMessage = messages.value[messages.value.length - 1]
 
@@ -34,8 +43,25 @@ export function useMessageStream(
       currentMessage.parts[contentType] = ''
     }
 
-    currentMessage.parts[contentType] += eventData.content
+    currentMessage.parts[contentType] += eventData.content ?? ''
   }
+
+  const handleToolEvent = (eventData: StreamEvent): void => {
+    if (eventData.eventType === StreamEventType.TOOL_CALL) {
+      currentTool.value = {
+        name: eventData.toolName ?? '',
+        arguments: eventData.arguments ?? {},
+        status: 'calling',
+      }
+    } else if (eventData.eventType === StreamEventType.TOOL_RESULT && currentTool.value) {
+      currentTool.value = {
+        ...currentTool.value,
+        status: 'complete',
+        result: eventData.result,
+      }
+    }
+  }
+
   const parseStreamChunk = (chunk: string): void => {
     const lines = chunk
       .trim()
@@ -45,7 +71,23 @@ export function useMessageStream(
     for (const line of lines) {
       try {
         const eventData = JSON.parse(line) as StreamEvent
-        if (eventData.eventType !== StreamEventType.ERROR) {
+
+        if (eventData.eventType === StreamEventType.ERROR) {
+          console.error('Stream error:', eventData.content)
+          continue
+        }
+
+        if (eventData.eventType === StreamEventType.STREAM_END) {
+          if (onComplete) {
+            onComplete()
+          }
+          continue
+        }
+
+        if (eventData.eventType === StreamEventType.TOOL_CALL
+          || eventData.eventType === StreamEventType.TOOL_RESULT) {
+          handleToolEvent(eventData)
+        } else {
           updateMessageWithEvent(eventData)
         }
       }
@@ -84,5 +126,6 @@ export function useMessageStream(
   return {
     ...stream,
     updateMessageWithEvent,
+    currentTool,
   }
 }

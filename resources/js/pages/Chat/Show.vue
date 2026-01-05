@@ -53,7 +53,7 @@ const {
   isLastMessageFromUser,
 } = useChatMessages(props.chat, chatContainerRef)
 
-const { isFetching, isStreaming, send, cancel, id } = useMessageStream(
+const { isFetching, isStreaming, send, cancel, id, currentTool } = useMessageStream(
   props.chat.id,
   messages,
   clearInput,
@@ -153,6 +153,7 @@ onMounted(() => {
         :chat-id="props.chat.id"
         :messages="messages"
         :stream-id="id"
+        :current-tool="currentTool"
         :is-readonly="false"
         @stop="stop"
         @handle-submit="handleSubmit"
