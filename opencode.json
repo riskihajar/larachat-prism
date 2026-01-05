@@ -10,16 +10,22 @@
                 "boost:mcp"
             ]
         },
-        "herd": {
+        "context7": {
             "type": "local",
-            "enabled": true,
             "command": [
-                "php",
-                "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
+                "npx",
+                "-y",
+                "@upstash/context7-mcp"
             ],
-            "environment": {
-                "SITE_PATH": "/Users/riskihajar/projects/github/larachat-prism"
-            }
+            "enabled": true
+        },
+        "playwright": {
+            "type": "local",
+            "command": [
+                "npx",
+                "@playwright/mcp@latest"
+            ],
+            "enabled": false
         }
     }
 }
