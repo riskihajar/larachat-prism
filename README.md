@@ -8,6 +8,21 @@ A modern AI chat starter kit built with Laravel, featuring real-time streaming r
 
 Prism Chat provides a solid foundation for building AI-powered chat applications with Laravel. It leverages Laravel's powerful ecosystem combined with the [Prism PHP SDK](https://prismphp.com/) to deliver real-time streaming responses, creating a dynamic and engaging user experience.
 
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [docs/index.md](docs/index.md) | Main documentation index and quick links |
+| [docs/architecture.md](docs/architecture.md) | Detailed architecture overview and design patterns |
+| [docs/stack.md](docs/stack.md) | Complete technology stack and dependencies |
+| [docs/database.md](docs/database.md) | Database schema, models, and relationships |
+| [docs/api-routes.md](docs/api-routes.md) | All routes, endpoints, and controller actions |
+| [docs/components.md](docs/components.md) | Vue components, composables, and type definitions |
+| [docs/configuration.md](docs/configuration.md) | Environment setup and AI provider configuration |
+| [docs/development.md](docs/development.md) | Development setup and commands |
+
 ## Features
 
 - **Real-time AI Responses**: Stream AI responses as they're generated
@@ -29,7 +44,7 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
 
 ## Prerequisites
 
-- **PHP 8.3+** with extensions:
+- **PHP 8.4+** with extensions:
   - curl, dom, fileinfo, filter, hash, mbstring, openssl, pcre, pdo, session, tokenizer, xml
 - **Composer 2.x**
 - **Node.js 18+** and npm/bun
