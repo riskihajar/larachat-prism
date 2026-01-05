@@ -11,6 +11,7 @@ use Prism\Prism\Prism;
 use App\Models\Message;
 use App\Enums\ModelName;
 use App\Services\ChatTools;
+use Prism\Prism\Enums\Provider;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\ChatStreamRequest;
 use Illuminate\Support\Facades\Response;
@@ -48,13 +49,37 @@ final class ChatStreamController extends Controller
             $hasToolCalls = false;
 
             try {
-                $response = Prism::text()
-                    ->withSystemPrompt(view('prompts.system'))
-                    ->using($model->getProvider(), $model->value)
-                    ->withMessages($messages)
-                    ->withTools($tools)
-                    ->withMaxSteps(3)
-                    ->asStream();
+                $provider = $model->getProvider();
+                $modelId = $model->value;
+
+                if ($provider === Provider::Anthropic) {
+                    $response = Prism::text()
+                        ->withSystemPrompt(view('prompts.system'))
+                        ->using($provider, $modelId)
+                        ->withMessages($messages)
+                        ->withTools($tools)
+                        ->withMaxSteps(3)
+                        ->asStream();
+                } elseif ($provider === Provider::OpenRouter) {
+                    $response = Prism::text()
+                        ->withSystemPrompt(view('prompts.system'))
+                        ->using($provider, $modelId)
+                        ->withMessages($messages)
+                        ->withTools($tools)
+                        ->withMaxSteps(3)
+                        ->usingProviderConfig([
+                            'url' => 'https://bedrock-gateway.samarinda.ai/v1',
+                        ])
+                        ->asStream();
+                } else {
+                    $response = Prism::text()
+                        ->withSystemPrompt(view('prompts.system'))
+                        ->using($provider, $modelId)
+                        ->withMessages($messages)
+                        ->withTools($tools)
+                        ->withMaxSteps(3)
+                        ->asStream();
+                }
 
                 foreach ($response as $event) {
                     $eventData = match ($event::class) {

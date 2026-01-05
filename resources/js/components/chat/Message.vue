@@ -2,12 +2,19 @@
 import type { Message } from '@/types'
 import { Icon } from '@iconify/vue'
 import { AnimatePresence, motion } from 'motion-v'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useMessageFormatting } from '@/composables/useMessageFormatting'
 import { ContentType, Role } from '@/types/enum'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 import MessageActions from './MessageActions.vue'
 import ReasoningDisplay from './ReasoningDisplay.vue'
+
+interface ToolCallInfo {
+  name: string
+  arguments: Record<string, unknown>
+  status: 'calling' | 'complete'
+  result?: string
+}
 
 const props = defineProps<{
   message: Message
@@ -15,6 +22,7 @@ const props = defineProps<{
   requiresScrollPadding: boolean
   isReadonly?: boolean
   chatId?: string
+  toolResult?: ToolCallInfo | null
 }>()
 
 const mode = ref<'view' | 'edit'>('view')
@@ -22,6 +30,28 @@ const { messageParts } = useMessageFormatting(props.message)
 
 const isUserMessage = props.message.role === Role.USER
 const isAssistantMessage = props.message.role === Role.ASSISTANT
+
+const shouldShowToolResult = computed(() => {
+  return (
+    isAssistantMessage
+    && props.toolResult
+    && props.toolResult.status === 'complete'
+    && props.toolResult.result
+  )
+})
+
+function formatToolResult(result: string): string {
+  try {
+    const parsed = JSON.parse(result)
+    if (parsed.readable) {
+      return parsed.readable
+    }
+    return JSON.stringify(parsed, null, 2)
+  }
+  catch {
+    return result
+  }
+}
 </script>
 
 <template>
@@ -110,6 +140,19 @@ const isAssistantMessage = props.message.role === Role.ASSISTANT
               </div>
             </div>
           </template>
+
+          <div
+            v-if="shouldShowToolResult"
+            class="mt-3 rounded-md bg-muted/50 border border-muted-foreground/20 p-3 text-sm"
+          >
+            <div class="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+              <Icon icon="lucide:tool" class="size-3" />
+              <span class="font-medium">Tool: {{ toolResult?.name }}</span>
+            </div>
+            <div class="font-mono text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+              {{ formatToolResult(toolResult!.result!) }}
+            </div>
+          </div>
 
           <MessageActions
             v-if="!isLoading && !isReadonly"
