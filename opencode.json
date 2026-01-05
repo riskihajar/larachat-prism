@@ -19,6 +19,14 @@
             ],
             "enabled": true
         },
+        "grep-mcp": {
+            "type": "local",
+            "command": [
+                "uvx",
+                "grep-mcp"
+            ],
+            "enabled": true
+        },
         "playwright": {
             "type": "local",
             "command": [
@@ -26,15 +34,6 @@
                 "@playwright/mcp@latest"
             ],
             "enabled": false
-        },
-        "grep-mcp": {
-            "type": "local",
-            "command": [
-                "npx",
-                "-y",
-                "@glamaigpt/grep-mcp"
-            ],
-            "enabled": true
         }
     }
 }
