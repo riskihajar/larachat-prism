@@ -26,6 +26,15 @@
                 "@playwright/mcp@latest"
             ],
             "enabled": false
+        },
+        "grep-mcp": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "@glamaigpt/grep-mcp"
+            ],
+            "enabled": true
         }
     }
 }
