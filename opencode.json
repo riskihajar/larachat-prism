@@ -27,13 +27,23 @@
             ],
             "enabled": true
         },
+        "ai-elements-vue": {
+            "type": "local",
+            "command": [
+                "npx",  
+                "-y",
+                "mcp-remote",
+                "https://registry.ai-elements-vue.com/mcp"
+            ],
+            "enabled": true
+        },
         "playwright": {
             "type": "local",
             "command": [
                 "npx",
                 "@playwright/mcp@latest"
             ],
-            "enabled": false
+            "enabled": true
         }
     }
 }
