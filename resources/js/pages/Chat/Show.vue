@@ -9,7 +9,7 @@ import type {
 import { Head, router } from '@inertiajs/vue3'
 import { useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
-import ChatContainer from '@/components/chat/ChatContainer.vue'
+import AiChat from '@/components/ai-chat/AiChat.vue'
 import { provideChatInput } from '@/composables/useChatInput'
 import { useChatMessages } from '@/composables/useChatMessages'
 import { useMessageStream } from '@/composables/useMessageStream'
@@ -39,7 +39,6 @@ const breadcrumbs: BreadcrumbItemType[] = [
 const { input, clearInput } = provideChatInput()
 const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
-const chatContainerRef = ref<InstanceType<typeof ChatContainer>>()
 
 const { visibility } = provideVisibility(
   initialVisibility.value,
@@ -48,12 +47,11 @@ const { visibility } = provideVisibility(
 const {
   messages,
   addTextMessage,
-  scrollToBottom,
   getLastMessage,
   isLastMessageFromUser,
-} = useChatMessages(props.chat, chatContainerRef)
+} = useChatMessages(props.chat)
 
-const { isFetching, isStreaming, send, cancel, id, currentTool } = useMessageStream(
+const { isFetching, isStreaming, send, cancel, currentTool } = useMessageStream(
   props.chat.id,
   messages,
   clearInput,
@@ -84,20 +82,9 @@ watch(
   { immediate: false },
 )
 
-function sendMessage(messageContent: MessageParts): void {
-  addTextMessage(messageContent[ContentType.TEXT] || '')
-
-  send({
-    message: messageContent[ContentType.TEXT] || '',
-    model: selectedModel.value.id,
-  })
-}
-
-async function handleSubmit(): Promise<void> {
-  const trimmedInput = input.value.trim()
-
+async function handleSubmit(message: string): Promise<void> {
   if (
-    !trimmedInput
+    !message
     || isFetching.value
     || isStreaming.value
     || !props.chat.id
@@ -105,14 +92,10 @@ async function handleSubmit(): Promise<void> {
     return
   }
 
-  clearInput()
-
-  await nextTick(() => {
-    addTextMessage(trimmedInput)
-  })
+  addTextMessage(message)
 
   send({
-    message: trimmedInput,
+    message,
     model: selectedModel.value.id,
   })
 }
@@ -125,22 +108,23 @@ function stop(): void {
 
 onMounted(() => {
   if (input.value.trim()) {
-    sendMessage({ [ContentType.TEXT]: input.value.trim() })
+    addTextMessage(input.value.trim())
+    send({
+      message: input.value.trim(),
+      model: selectedModel.value.id,
+    })
     clearInput()
     return
   }
 
   const lastMessage = getLastMessage()
   if (lastMessage && isLastMessageFromUser()) {
-    sendMessage(lastMessage.parts)
+    send({
+      message: lastMessage.parts?.text || '',
+      model: selectedModel.value.id,
+    })
     clearInput()
   }
-
-  nextTick(() => {
-    if (messages.value.length > 0) {
-      scrollToBottom()
-    }
-  })
 })
 </script>
 
@@ -148,15 +132,14 @@ onMounted(() => {
   <Head :title="pageTitle" />
   <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
     <div class="h-[calc(100vh-4rem)] bg-background">
-      <ChatContainer
-        ref="chatContainerRef"
+      <AiChat
         :chat-id="props.chat.id"
         :messages="messages"
-        :stream-id="id"
         :current-tool="currentTool"
+        :is-streaming="isStreaming"
         :is-readonly="false"
+        @submit="handleSubmit"
         @stop="stop"
-        @handle-submit="handleSubmit"
       />
     </div>
   </AppLayout>
